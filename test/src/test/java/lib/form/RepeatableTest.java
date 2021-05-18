@@ -23,11 +23,6 @@
  */
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
@@ -42,35 +37,31 @@ import java.util.List;
 import com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJob;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
-import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.InvisibleAction;
-import hudson.model.RootAction;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * @author Alan.Harder@sun.com
  */
-public class RepeatableTest {
+public class RepeatableTest extends HudsonTestCase {
+    private JSONObject formData;
+    private Class<?> bindClass;
+    private List<?> bindResult;
+    public List<Object> list = new ArrayList<>();
+    public List<Object> defaults = null;
+    public Integer minimum = null;
 
-    @Rule public JenkinsRule j = new JenkinsRule();
-
-    private RootActionImpl rootAction;
-
-    @Before
-    public void setUp() {
-        rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
+    public void doSubmitTest(StaplerRequest req) throws Exception {
+        formData = req.getSubmittedForm();
+        if (bindClass != null)
+            bindResult = req.bindJSONToList(bindClass, formData.get("items"));
     }
 
     // ========================================================================
@@ -82,19 +73,18 @@ public class RepeatableTest {
         getHtmlButton(f, "Add", false).click();
         f.getInputByValue("").setValueAttribute("value three");
         f.getInputsByName("bool").get(2).click();
-        j.submit(f);
+        submit(f);
     }
 
-    @Test
     public void testSimple() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
         getHtmlButton(f, "Add", true).click();
         doTestSimple(f);
 
         assertEqualsJsonArray("[{\"bool\":false,\"txt\":\"value one\"},"
             + "{\"bool\":false,\"txt\":\"value two\"},{\"bool\":true,\"txt\":\"value three\"}]",
-            rootAction.formData.get("foos"));
+            formData.get("foos"));
     }
 
     /**
@@ -102,9 +92,8 @@ public class RepeatableTest {
      *
      * @throws Exception
      */
-    @Test
     public void testSimpleCheckNumberOfButtons() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSimpleWithDeleteButton");
+        HtmlPage p = createWebClient().goTo("self/testSimpleWithDeleteButton");
         HtmlForm f = p.getFormByName("config");
         String buttonCaption = "Add";
         assertEquals(1, getButtonsList(f, buttonCaption).size());
@@ -121,9 +110,8 @@ public class RepeatableTest {
      *
      * @throws Exception
      */
-    @Test
     public void testSimpleCheckNumberOfButtonsEnabledTopButton() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSimpleWithDeleteButtonTopButton");
+        HtmlPage p = createWebClient().goTo("self/testSimpleWithDeleteButtonTopButton");
         HtmlForm f = p.getFormByName("config");
         String buttonCaption = "Add";
         assertEquals(1, getButtonsList(f, buttonCaption).size());
@@ -141,130 +129,118 @@ public class RepeatableTest {
         public String txt;
         public boolean bool;
         @DataBoundConstructor
-        public Foo(String txt, boolean bool) {
-            this.txt = txt;
-            this.bool = bool;
-        }
+        public Foo(String txt, boolean bool) { this.txt = txt; this.bool = bool; }
         @Override public String toString() { return "foo:" + txt + ':' + bool; }
     }
 
     private void addData() {
-        rootAction.list.add(new Foo("existing one", true));
-        rootAction.list.add(new Foo("existing two", false));
+        list.add(new Foo("existing one", true));
+        list.add(new Foo("existing two", false));
     }
 
-    @Test
     public void testSimple_ExistingData() throws Exception {
         addData();
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
         getHtmlButton(f, "Add", false).click();
         doTestSimple(f);
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},"
             + "{\"bool\":false,\"txt\":\"existing two\"},{\"bool\":true,\"txt\":\"value one\"},"
             + "{\"bool\":false,\"txt\":\"value two\"},{\"bool\":false,\"txt\":\"value three\"}]",
-            rootAction.formData.get("foos"));
+            formData.get("foos"));
     }
 
-    @Test
     public void testMinimum() throws Exception {
-        rootAction.minimum = 3;
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        minimum = 3;
+        HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
         f.getInputByValue("").setValueAttribute("value one");
         f.getInputByValue("").setValueAttribute("value two");
         f.getInputByValue("").setValueAttribute("value three");
-        assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
+        try { f.getInputByValue(""); fail("?"); } catch (ElementNotFoundException expected) { }
         f.getInputsByName("bool").get(2).click();
-        j.submit(f);
+        submit(f);
         assertEqualsJsonArray("[{\"bool\":false,\"txt\":\"value one\"},"
             + "{\"bool\":false,\"txt\":\"value two\"},{\"bool\":true,\"txt\":\"value three\"}]",
-            rootAction.formData.get("foos"));
+            formData.get("foos"));
     }
 
-    @Test
     public void testMinimum_ExistingData() throws Exception {
         addData();
-        rootAction.minimum = 3;
-        HtmlPage p = j.createWebClient().goTo("self/testSimple");
+        minimum = 3;
+        HtmlPage p = createWebClient().goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
         f.getInputByValue("").setValueAttribute("new one");
-        assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
+        try { f.getInputByValue(""); fail("?"); } catch (ElementNotFoundException expected) { }
         f.getInputsByName("bool").get(1).click();
-        j.submit(f);
+        submit(f);
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},"
             + "{\"bool\":true,\"txt\":\"existing two\"},{\"bool\":false,\"txt\":\"new one\"}]",
-            rootAction.formData.get("foos"));
+            formData.get("foos"));
     }
     
-    @Test
     public void testNoData() throws Exception {
-        rootAction.list = null;
-        rootAction.defaults = null;
+        list = null;
+        defaults = null;
         gotoAndSubmitConfig("defaultForField");
-        assertNull(rootAction.formData.get("list"));
+        assertNull(formData.get("list"));
 
         gotoAndSubmitConfig("defaultForItems");
-        assertNull(rootAction.formData.get("list"));
+        assertNull(formData.get("list"));
     }
     
-    @Test
     public void testItemsWithDefaults() throws Exception {
         assertWithDefaults("defaultForItems");
     }    
 
-    @Test
     public void testItemsDefaultsIgnoredIfFieldHasData() throws Exception {
         assertDefaultsIgnoredIfHaveData("defaultForItems");
     }    
 
-    @Test
     public void testFieldWithDefaults() throws Exception {
         assertWithDefaults("defaultForField");
     }    
 
-    @Test
     public void testFieldDefaultsIgnoredIfFieldHasData() throws Exception {
         assertDefaultsIgnoredIfHaveData("defaultForField");
     }    
 
     private void addDefaults() {
-        rootAction.defaults = new ArrayList<>();
-        rootAction.defaults.add(new Foo("default one", true));
-        rootAction.defaults.add(new Foo("default two", false));
+        defaults = new ArrayList<>();
+        defaults.add(new Foo("default one", true));
+        defaults.add(new Foo("default two", false));
     }
     
     private void assertWithDefaults(final String viewName) throws Exception {
-        rootAction.list = null;
+        list = null;
         addDefaults();
         gotoAndSubmitConfig(viewName);
-        assertNotNull(rootAction.formData.get("list"));
+        assertNotNull(formData.get("list"));
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"default one\"},{\"bool\":false,\"txt\":\"default two\"}]",
-                rootAction.formData.get("list"));
+                formData.get("list"));
     }    
 
     private void assertDefaultsIgnoredIfHaveData(final String viewName) throws Exception {
         addData();
         addDefaults();
         gotoAndSubmitConfig(viewName);
-        assertNotNull(rootAction.formData.get("list"));
+        assertNotNull(formData.get("list"));
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},{\"bool\":false,\"txt\":\"existing two\"}]",
-                rootAction.formData.get("list"));
+                formData.get("list"));
     }
     
     private void gotoAndSubmitConfig(final String viewName) throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/" + viewName);
+        HtmlPage p = createWebClient().goTo("self/" + viewName);
         HtmlForm f = p.getFormByName("config");
-        j.submit(f);
+        submit(f);
     }
 
     // ========================================================================
 
     // hudson-behavior uniquifies radiobutton names so the browser properly handles each group,
     // then converts back to original names when submitting form.
-    @Test
     public void testRadio() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testRadio");
+        HtmlPage p = createWebClient().goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
         getHtmlButton(f, "Add", true).click();
         f.getInputByValue("").setValueAttribute("txt one");
@@ -272,41 +248,36 @@ public class RepeatableTest {
         getHtmlButton(f, "Add", false).click();
         f.getInputByValue("").setValueAttribute("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(3).click();
-        j.submit(f);
+        submit(f);
         assertEqualsJsonArray("[{\"radio\":\"two\",\"txt\":\"txt one\"},"
                 + "{\"radio\":\"two\",\"txt\":\"txt two\"}]",
-                     rootAction.formData.get("foos"));
+                     formData.get("foos"));
     }
 
     public static class FooRadio {
         public String txt, radio;
-        public FooRadio(String txt, String radio) {
-            this.txt = txt;
-            this.radio = radio;
-        }
+        public FooRadio(String txt, String radio) { this.txt = txt; this.radio = radio; }
     }
 
-    @Test
     public void testRadio_ExistingData() throws Exception {
-        rootAction.list.add(new FooRadio("1", "one"));
-        rootAction.list.add(new FooRadio("2", "two"));
-        rootAction.list.add(new FooRadio("three", "one"));
-        HtmlPage p = j.createWebClient().goTo("self/testRadio");
+        list.add(new FooRadio("1", "one"));
+        list.add(new FooRadio("2", "two"));
+        list.add(new FooRadio("three", "one"));
+        HtmlPage p = createWebClient().goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
         getHtmlButton(f, "Add", false).click();
         f.getInputByValue("").setValueAttribute("txt 4");
         f.getElementsByAttribute("INPUT", "type", "radio").get(7).click();
-        j.submit(f);
+        submit(f);
         assertEqualsJsonArray("[{\"radio\":\"one\",\"txt\":\"1\"},{\"radio\":\"two\",\"txt\":\"2\"},"
                 + "{\"radio\":\"one\",\"txt\":\"three\"},{\"radio\":\"two\",\"txt\":\"txt 4\"}]",
-                rootAction.formData.get("foos"));
+                formData.get("foos"));
     }
 
     // hudson-behavior uniquifies radiobutton names so the browser properly handles each group,
     // then converts back to original names when submitting form.
-    @Test
     public void testRadioBlock() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testRadioBlock");
+        HtmlPage p = createWebClient().goTo("self/testRadioBlock");
         HtmlForm f = p.getFormByName("config");
         getHtmlButton(f, "Add", true).click();
         f.getInputByValue("").setValueAttribute("txt one");
@@ -317,10 +288,10 @@ public class RepeatableTest {
         f.getInputByValue("").setValueAttribute("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(2).click();
         f.getInputByValue("").setValueAttribute("avalue two");
-        j.submit(f);
+        submit(f);
         assertEqualsJsonArray("[{\"radio\":{\"b\":\"bvalue\",\"value\":\"two\"},\"txt\":\"txt one\"},"
                      + "{\"radio\":{\"a\":\"avalue two\",\"value\":\"one\"},\"txt\":\"txt two\"}]",
-                     rootAction.formData.get("foos"));
+                     formData.get("foos"));
     }
 
     // ========================================================================
@@ -343,19 +314,13 @@ public class RepeatableTest {
 
     public static class Apple extends Fruit {
         private int seeds;
-        @DataBoundConstructor public Apple(int seeds) {
-            super("Apple");
-            this.seeds = seeds;
-        }
+        @DataBoundConstructor public Apple(int seeds) { super("Apple"); this.seeds = seeds; }
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Apple.class);
         @Override public String toString() { return name + " with " + seeds + " seeds"; }
     }
     public static class Banana extends Fruit {
         private boolean yellow;
-        @DataBoundConstructor public Banana(boolean yellow) {
-            super("Banana");
-            this.yellow = yellow;
-        }
+        @DataBoundConstructor public Banana(boolean yellow) { super("Banana"); this.yellow = yellow; }
         @Extension public static final FruitDescriptor D = new FruitDescriptor(Banana.class);
         @Override public String toString() { return (yellow ? "Yellow" : "Green") + " " + name; }
     }
@@ -370,9 +335,12 @@ public class RepeatableTest {
         @Override public String toString() { return fruit + " " + word; }
     }
 
-    @Test
+    public DescriptorExtensionList<Fruit,Descriptor<Fruit>> getFruitDescriptors() {
+        return jenkins.getDescriptorList(Fruit.class);
+    }
+
     public void testDropdownList() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testDropdownList");
+        HtmlPage p = createWebClient().goTo("self/testDropdownList");
         HtmlForm f = p.getFormByName("config");
         getHtmlButton(f, "Add", true).click();
         waitForJavaScript(p);
@@ -385,10 +353,10 @@ public class RepeatableTest {
         f.getInputsByName("yellow").get(1).click(); // checkbox
         f.getInputsByValue("").get(1).setValueAttribute("split"); // word
         String xml = f.asXml();
-        rootAction.bindClass = Fruity.class;
-        j.submit(f);
-        assertEquals(rootAction.formData + "\n" + xml,
-                     "[Apple with 17 seeds pie, Yellow Banana split]", rootAction.bindResult.toString());
+        bindClass = Fruity.class;
+        submit(f);
+        assertEquals(formData + "\n" + xml,
+                     "[Apple with 17 seeds pie, Yellow Banana split]", bindResult.toString());
     }
 
     // ========================================================================
@@ -412,9 +380,8 @@ public class RepeatableTest {
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
-    @Test
     public void testNested() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNested");
+        HtmlPage p = createWebClient().goTo("self/testNested");
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(p, f, "Add", true);
@@ -432,16 +399,15 @@ public class RepeatableTest {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        rootAction.bindClass = FooList.class;
-        j.submit(f);
+        bindClass = FooList.class;
+        submit(f);
         assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", rootAction.bindResult.toString());
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
-    @Test
     public void testNestedEnabledTopButton() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedTopButton");
+        HtmlPage p = createWebClient().goTo("self/testNestedTopButton");
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(p, f, "Add", true);
@@ -459,16 +425,15 @@ public class RepeatableTest {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        rootAction.bindClass = FooList.class;
-        j.submit(f);
+        bindClass = FooList.class;
+        submit(f);
         assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", rootAction.bindResult.toString());
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
-    @Test
     public void testNestedEnabledTopButtonInner() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedTopButtonInner");
+        HtmlPage p = createWebClient().goTo("self/testNestedTopButtonInner");
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(p, f, "Add", true);
@@ -486,16 +451,15 @@ public class RepeatableTest {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        rootAction.bindClass = FooList.class;
-        j.submit(f);
+        bindClass = FooList.class;
+        submit(f);
         assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", rootAction.bindResult.toString());
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
-    @Test
     public void testNestedEnabledTopButtonOuter() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedTopButtonOuter");
+        HtmlPage p = createWebClient().goTo("self/testNestedTopButtonOuter");
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(p, f, "Add", true);
@@ -513,10 +477,10 @@ public class RepeatableTest {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        rootAction.bindClass = FooList.class;
-        j.submit(f);
+        bindClass = FooList.class;
+        submit(f);
         assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
-                     + "FooList:title two:[foo:txt 2.1:false]]", rootAction.bindResult.toString());
+                     + "FooList:title two:[foo:txt 2.1:false]]", bindResult.toString());
     }
 
     private void clickButton(HtmlPage p, HtmlForm f, String caption, boolean isTopButton) throws IOException {
@@ -524,9 +488,8 @@ public class RepeatableTest {
         waitForJavaScript(p);
     }
 
-    @Test
     public void testNestedRadio() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedRadio");
+        HtmlPage p = createWebClient().goTo("self/testNestedRadio");
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(p, f, "Add", true);
@@ -546,15 +509,14 @@ public class RepeatableTest {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        j.submit(f);
+        submit(f);
         assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
                 + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
-                rootAction.formData.get("items"));
+                formData.get("items"));
     }
 
-    @Test
     public void testNestedRadioEnabledTopButton() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedRadioTopButton");
+        HtmlPage p = createWebClient().goTo("self/testNestedRadioTopButton");
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(p, f, "Add", true);
@@ -574,10 +536,10 @@ public class RepeatableTest {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
         }
-        j.submit(f);
+        submit(f);
         assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
                 + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
-                rootAction.formData.get("items"));
+                formData.get("items"));
     }
 
     private void assertEqualsJsonArray(String golden, Object jsonArray) {
@@ -626,30 +588,4 @@ public class RepeatableTest {
         return form.getByXPath("//button[text() = '" + buttonCaption + "']");
     }
 
-    @TestExtension
-    public static final class RootActionImpl extends InvisibleAction implements RootAction {
-
-        private JSONObject formData;
-        private Class<?> bindClass;
-        private List<?> bindResult;
-        public List<Object> list = new ArrayList<>();
-        public List<Object> defaults = null;
-        public Integer minimum = null;
-
-        public DescriptorExtensionList<Fruit, Descriptor<Fruit>> getFruitDescriptors() {
-            return Jenkins.get().getDescriptorList(Fruit.class);
-        }
-
-        public void doSubmitTest(StaplerRequest req) throws Exception {
-            formData = req.getSubmittedForm();
-            if (bindClass != null) {
-                bindResult = req.bindJSONToList(bindClass, formData.get("items"));
-            }
-        }
-
-        @Override
-        public String getUrlName() {
-            return "self";
-        }
-    }
 }

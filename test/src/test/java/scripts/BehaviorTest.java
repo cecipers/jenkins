@@ -23,30 +23,19 @@
  */
 package scripts;
 
-import static org.junit.Assert.assertEquals;
-
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.InvisibleAction;
-import hudson.model.RootAction;
-import org.junit.Rule;
-import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * Tests <tt>behaviour.js</tt>
  *
  * @author Kohsuke Kawaguchi
  */
-public class BehaviorTest {
-
-    @Rule public JenkinsRule j = new JenkinsRule();
-
-    @Test
+public class BehaviorTest extends HudsonTestCase {
     public void testCssSelectors() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testCssSelectors");
+        HtmlPage p = createWebClient().goTo("self/testCssSelectors");
 
         // basic class selector, that we use the most often
         assertEquals(2,asInt(p.executeJavaScript("findElementsBySelector($('test1'),'.a',true).length")));
@@ -66,25 +55,16 @@ public class BehaviorTest {
     }
 
     @Issue("JENKINS-14495")
-    @Test
     public void testDuplicateRegistrations() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testDuplicateRegistrations");
+        HtmlPage p = createWebClient().goTo("self/testDuplicateRegistrations");
         ScriptResult r = p.executeJavaScript("document.getElementsBySelector('DIV.a')[0].innerHTML");
         assertEquals("initial and appended yet different", r.getJavaScriptResult().toString());
     }
 
-    @Test
     public void testSelectorOrdering() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSelectorOrdering");
+        HtmlPage p = createWebClient().goTo("self/testSelectorOrdering");
         ScriptResult r = p.executeJavaScript("document.getElementsBySelector('DIV.a')[0].innerHTML");
         assertEquals("initial early counted! generic weevils! late", r.getJavaScriptResult().toString());
     }
 
-    @TestExtension
-    public static final class RootActionImpl extends InvisibleAction implements RootAction {
-        @Override
-        public String getUrlName() {
-            return "self";
-        }
-    }
 }

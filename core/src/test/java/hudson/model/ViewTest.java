@@ -83,7 +83,7 @@ public class ViewTest {
      * Get all items recursively when View implements ViewGroup at the same time
      */
     @Test
-    public void getAllItems() {
+    public void getAllItems() throws Exception {
 
         final View leftView = Mockito.mock(View.class);
         final View rightView = Mockito.mock(View.class);
@@ -254,7 +254,7 @@ public class ViewTest {
         }
 
         @Override
-        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) {
+        public Item doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             return null;
         }
     }

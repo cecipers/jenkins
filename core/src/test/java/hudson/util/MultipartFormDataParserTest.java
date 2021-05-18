@@ -32,7 +32,7 @@ import org.junit.Test;
 public class MultipartFormDataParserTest {
     
     @Test
-    public void testIsMultipart() {
+    public void testIsMultipart() throws Exception {
         Assert.assertFalse("Wrongly identified \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm(null));
         Assert.assertFalse("Wrongly identified \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm("blah"));
 

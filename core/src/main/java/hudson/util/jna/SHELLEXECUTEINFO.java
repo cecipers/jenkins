@@ -95,9 +95,11 @@ public class SHELLEXECUTEINFO extends Structure {
         public Pointer hMonitor;
 
         public DUMMYUNIONNAME_union() {
+            super();
         }
 
         public DUMMYUNIONNAME_union(Pointer hIcon_or_hMonitor) {
+            super();
             this.hMonitor = this.hIcon = hIcon_or_hMonitor;
             setType(Pointer.class);
         }

@@ -35,7 +35,7 @@ public class DescribableListTest {
 
     @Issue("JENKINS-49054")
     @Test
-    public void exceptionDuringUnmarshalling() {
+    public void exceptionDuringUnmarshalling() throws Exception {
         Data data = new Data();
         data.list.add(new Datum(1));
         data.list.add(new Datum(2));

@@ -1,6 +1,7 @@
 package hudson.util;
 
 import hudson.FilePath;
+import hudson.Util;
 import hudson.remoting.Which;
 
 import java.io.Serializable;
@@ -64,6 +65,6 @@ public class ClasspathBuilder implements Serializable {
      */
     @Override
     public String toString() {
-        return String.join(File.pathSeparator, args);
+        return Util.join(args,File.pathSeparator);
     }
 }

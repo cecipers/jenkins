@@ -23,14 +23,13 @@
  */
 package hudson.security;
 
+import com.google.common.collect.ImmutableSet;
 import hudson.model.Hudson;
 import jenkins.model.Jenkins;
 import net.sf.json.util.JSONUtils;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -159,7 +158,7 @@ public final class Permission {
         this.description = description;
         this.impliedBy = impliedBy;
         this.enabled = enable;
-        this.scopes = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(scopes)));
+        this.scopes = ImmutableSet.copyOf(scopes);
         this.id = owner.getName() + '.' + name;
 
         group.add(this);

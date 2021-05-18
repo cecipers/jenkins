@@ -23,9 +23,6 @@
  */
 package lib.form;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -41,10 +38,8 @@ import hudson.tasks.Publisher;
 import hudson.util.ComboBoxModel;
 
 import jenkins.model.OptionalJobProperty;
-import org.junit.Rule;
-import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -52,9 +47,7 @@ import org.kohsuke.stapler.QueryParameter;
 /**
  * @author John McNally
  */
-public class ComboBoxTest {
-
-    @Rule public JenkinsRule j = new JenkinsRule();
+public class ComboBoxTest extends HudsonTestCase {
 
     /**
      * Used in testCompoundFieldDependentCombobox for Issue("JENKINS-16719")
@@ -126,16 +119,15 @@ public class ComboBoxTest {
      * Confirms that relative paths work when prefilling a combobox text field
      */
     @Issue("JENKINS-16719")
-    @Test
     public void testCompoundFieldDependentComboBox() throws Exception {
         Descriptor d1 = new CompoundFieldComboBoxBuilder.DescriptorImpl();
         Publisher.all().add(d1);
         Descriptor d2 = new CompoundField.DescriptorImpl();
         Publisher.all().add(d2);
-        FreeStyleProject p = j.createFreeStyleProject();
+        FreeStyleProject p = createFreeStyleProject();
         p.getPublishersList().add(new CompoundFieldComboBoxBuilder(new CompoundField("AABBCC", "XXYYZZ"), null));
         try {
-            j.createWebClient().getPage(p,"configure");
+            new WebClient().getPage(p,"configure");
             
         } catch(AssertionError e) {
             if(e.getMessage().contains("doFillFooItems is broken")) {
@@ -165,13 +157,14 @@ public class ComboBoxTest {
     }
 
     @Issue("SECURITY-1525")
-    @Test
     public void testEnsureXssNotPossible() throws Exception {
         XssProperty xssProperty = new XssProperty();
-        FreeStyleProject p = j.createFreeStyleProject();
+        FreeStyleProject p = createFreeStyleProject();
         p.addProperty(xssProperty);
 
-        HtmlPage configurePage = j.createWebClient().getPage(p, "configure");
+        WebClient wc = new WebClient();
+
+        HtmlPage configurePage = wc.getPage(p, "configure");
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
         HtmlElement comboBox = configurePage.getElementByName("_.xss");

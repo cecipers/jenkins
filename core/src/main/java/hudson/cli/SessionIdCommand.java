@@ -22,3 +22,4 @@ public class SessionIdCommand extends CLICommand {
         return 0;
     }
 }
+

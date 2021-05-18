@@ -1,8 +1,5 @@
 package hudson.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import hudson.model.DownloadService.Downloadable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,16 +11,15 @@ import hudson.tasks.Maven;
 import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolInstallation;
 import net.sf.json.JSONObject;
-import org.junit.Test;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.WithoutJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class DownloadServiceTest {
+public class DownloadServiceTest extends HudsonTestCase {
 
     @WithoutJenkins // could have been in core/src/test/ but update-center.json was already in test/src/test/ (used by UpdateSiteTest)
-    @Test
     public void testLoadJSON() throws Exception {
         assertRoots("[list]", "hudson.tasks.Maven.MavenInstaller.json"); // format used by most tools
         assertRoots("[data, version]", "hudson.tools.JDKInstaller.json"); // anomalous format
@@ -38,7 +34,6 @@ public class DownloadServiceTest {
         assertEquals(expected, new TreeSet<>(keySet).toString());
     }
 
-    @Test
     public void testReduceFunctionWithMavenJsons() throws Exception {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Maven.MavenInstaller2.json");
@@ -57,7 +52,6 @@ public class DownloadServiceTest {
         assertEquals(reducedJson, expectedResultJson);
     }
 
-    @Test
     public void testReduceFunctionWithAntJsons() throws Exception {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.tasks.Ant.AntInstaller2.json");
@@ -76,7 +70,6 @@ public class DownloadServiceTest {
         assertEquals(reducedJson, expectedResultJson);
     }
 
-    @Test
     public void testReduceFunctionWithNotDefaultSchemaJsons() throws Exception {
         URL resource1 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller1.json");
         URL resource2 = DownloadServiceTest.class.getResource("hudson.plugins.cmake.CmakeInstaller2.json");

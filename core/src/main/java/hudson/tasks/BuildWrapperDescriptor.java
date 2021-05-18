@@ -58,3 +58,4 @@ public abstract class BuildWrapperDescriptor extends Descriptor<BuildWrapper> {
      */
     public abstract boolean isApplicable(AbstractProject<?,?> item);
 }
+

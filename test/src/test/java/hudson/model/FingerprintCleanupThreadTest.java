@@ -236,7 +236,7 @@ public class FingerprintCleanupThreadTest {
 
         private Fingerprint fingerprintToLoad;
 
-        TestFileFingerprintStorage(Fingerprint fingerprintToLoad) {
+        public TestFileFingerprintStorage(Fingerprint fingerprintToLoad) {
             this.fingerprintToLoad = fingerprintToLoad;
         }
 
@@ -291,11 +291,11 @@ public class FingerprintCleanupThreadTest {
 
         private boolean isAlive = true;
 
-        TestFingerprint() throws IOException {
+        public TestFingerprint() throws IOException {
             super(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
         }
 
-        TestFingerprint(boolean isAlive) throws IOException {
+        public TestFingerprint(boolean isAlive) throws IOException {
             super(ptr, "foo", Util.fromHexString(Util.getDigestOf("foo")));
             this.isAlive = isAlive;
         }

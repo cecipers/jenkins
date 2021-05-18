@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -1523,13 +1523,13 @@ public class VirtualFileTest {
             this.root = root;
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public String getName() {
             return file.getName();
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public URI toURI() {
             return file.toURI();
@@ -1555,7 +1555,7 @@ public class VirtualFileTest {
             return false;
         }
 
-        @NonNull
+        @Nonnull
         @Override
         public VirtualFile[] list() {
             File[] kids = file.listFiles();
@@ -1573,9 +1573,9 @@ public class VirtualFileTest {
             return new VirtualFileMinimalImplementation(kid, root);
         }
 
-        @NonNull
+        @Nonnull
         @Override
-        public VirtualFile child(@NonNull String name) {
+        public VirtualFile child(@Nonnull String name) {
             return child(new File(file, name), root);
         }
 
@@ -1603,11 +1603,11 @@ public class VirtualFileTest {
 
     private static class VirtualFileMinimalImplementationWithDescendants extends VirtualFileMinimalImplementation {
 
-        VirtualFileMinimalImplementationWithDescendants(File file) {
+        public VirtualFileMinimalImplementationWithDescendants(File file) {
             super(file);
         }
 
-        VirtualFileMinimalImplementationWithDescendants(File file, File root) {
+        public VirtualFileMinimalImplementationWithDescendants(File file, File root) {
             super(file, root);
         }
 
@@ -1617,7 +1617,7 @@ public class VirtualFileTest {
         }
 
         @Override
-        public boolean isDescendant(String childRelativePath) {
+        public boolean isDescendant(String childRelativePath) throws IOException {
             return true;
         }
 

@@ -102,7 +102,7 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByEnvMaintainsIsUnix() {
+    @Test public void decoratedByEnvMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);
@@ -114,7 +114,7 @@ public class LauncherTest {
     }
 
     @Issue("JENKINS-18368")
-    @Test public void decoratedByPrefixMaintainsIsUnix() {
+    @Test public void decoratedByPrefixMaintainsIsUnix() throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         TaskListener listener = new StreamBuildListener(output);
         Launcher remoteLauncher = new Launcher.RemoteLauncher(listener, FilePath.localChannel, false);

@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.security.ACLContext;
 import jenkins.model.DependencyDeclarer;
+import com.google.common.collect.ImmutableList;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import jenkins.util.DirectedGraph;
@@ -212,13 +213,13 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     private List<Dependency> get(Map<AbstractProject, List<DependencyGroup>> map, AbstractProject src) {
         List<DependencyGroup> v = map.get(src);
         if(v==null) {
-            return Collections.emptyList();
+            return ImmutableList.of();
         } else {
-            List<Dependency> builder = new ArrayList<>();
+            ImmutableList.Builder<Dependency> builder = ImmutableList.builder();
             for (DependencyGroup dependencyGroup : v) {
                 builder.addAll(dependencyGroup.getGroup());
             }
-            return Collections.unmodifiableList(builder);
+            return builder.build();
         }
 
     }

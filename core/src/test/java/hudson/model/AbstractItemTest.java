@@ -56,7 +56,7 @@ public class AbstractItemTest {
     }
     
     @Test
-    public void testSearchNameIsName() {
+    public void testSearchNameIsName() throws Exception {
         final String name = "the item name jlrtlekjtekrjkjr";
         StubAbstractItem i = new StubAbstractItem();
         i.doSetName(name);

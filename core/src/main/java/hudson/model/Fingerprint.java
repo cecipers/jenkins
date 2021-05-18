@@ -23,6 +23,7 @@
  */
 package hudson.model;
 
+import com.google.common.collect.ImmutableList;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -1176,7 +1177,7 @@ public class Fingerprint implements ModelObject, Saveable {
             for (TransientFingerprintFacetFactory fff : TransientFingerprintFacetFactory.all()) {
                 fff.createFor(this,transientFacets);
             }
-            this.transientFacets = Collections.unmodifiableList(transientFacets);
+            this.transientFacets = ImmutableList.copyOf(transientFacets);
         }
 
         return new AbstractCollection<FingerprintFacet>() {

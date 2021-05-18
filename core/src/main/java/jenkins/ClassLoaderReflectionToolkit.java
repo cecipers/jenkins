@@ -31,7 +31,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return method.invoke(obj, args);
         } catch (IllegalAccessException x) {
-            throw new LinkageError(x.getMessage(), x);
+            throw new AssertionError(x);
         } catch (InvocationTargetException x) {
             Throwable x2 = x.getCause();
             if (x2 instanceof RuntimeException) {
@@ -193,7 +193,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (Class)FindLoadedClass.FIND_LOADED_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new LinkageError(e.getMessage(), e);
+            throw new Error(e);
         }
     }
 
@@ -203,7 +203,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (Class)FindClass.FIND_CLASS.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new LinkageError(e.getMessage(), e);
+            throw new Error(e);
         }
     }
 
@@ -213,7 +213,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (URL)FindResource.FIND_RESOURCE.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new LinkageError(e.getMessage(), e);
+            throw new Error(e);
         }
     }
 
@@ -223,7 +223,7 @@ public class ClassLoaderReflectionToolkit {
         try {
             return (Enumeration<URL>)FindResources.FIND_RESOURCES.invoke(cl,name);
         } catch (IllegalAccessException e) {
-            throw new LinkageError(e.getMessage(), e);
+            throw new Error(e);
         }
     }
 

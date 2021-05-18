@@ -55,3 +55,4 @@ public class MavenErrorNote extends ConsoleNote {
 
     public static final Pattern PATTERN = Pattern.compile("^\\[ERROR\\]");
 }
+

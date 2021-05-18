@@ -182,7 +182,7 @@ public class RunTest  {
     static class FullNameChangingProject extends Project<FullNameChangingProject, CustomBuild> implements TopLevelItem {
         private volatile String virtualName;
 
-        FullNameChangingProject(ItemGroup parent, String name) {
+        public FullNameChangingProject(ItemGroup parent, String name) {
             super(parent, name);
         }
 
@@ -219,7 +219,7 @@ public class RunTest  {
         }
     }
     
-    public static final class Mgr extends ArtifactManager {
+    private static final class Mgr extends ArtifactManager {
         static final AtomicBoolean deleted = new AtomicBoolean();
         @Override public boolean delete() throws IOException, InterruptedException {
             return !deleted.getAndSet(true);

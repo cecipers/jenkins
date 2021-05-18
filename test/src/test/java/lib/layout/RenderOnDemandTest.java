@@ -23,37 +23,24 @@
  */
 package lib.layout;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.WebClientUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.model.InvisibleAction;
-import hudson.model.RootAction;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.HudsonTestCase;
 
 /**
  * Tests &lt;renderOnDemand> tag.
  *
  * @author Kohsuke Kawaguchi
  */
-public class RenderOnDemandTest {
-
-    @Rule public JenkinsRule j = new JenkinsRule();
-
+public class RenderOnDemandTest extends HudsonTestCase {
     /**
      * Makes sure that the behavior rules are applied to newly inserted nodes,
      * even when multiple nodes are added.
      */
-    @Test
     public void testBehaviour() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testBehaviour");
+        HtmlPage p = createWebClient().goTo("self/testBehaviour");
 
         p.executeJavaScript("renderOnDemand(document.getElementsBySelector('.lazy')[0])");
         WebClientUtil.waitForJSExec(p.getWebClient());
@@ -65,13 +52,12 @@ public class RenderOnDemandTest {
     }
 
     /*
-    @Test
     public void testMemoryConsumption() throws Exception {
-        j.createWebClient().goTo("self/testBehaviour"); // prime caches
+        createWebClient().goTo("self/testBehaviour"); // prime caches
         int total = 0;
         for (MemoryAssert.HistogramElement element : MemoryAssert.increasedMemory(new Callable<Void>() {
             @Override public Void call() throws Exception {
-                j.createWebClient().goTo("self/testBehaviour");
+                createWebClient().goTo("self/testBehaviour");
                 return null;
             }
         }, new Filter() {
@@ -89,9 +75,8 @@ public class RenderOnDemandTest {
     /**
      * Makes sure that scripts get evaluated.
      */
-    @Test
     public void testScript() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testScript");
+        HtmlPage p = createWebClient().goTo("self/testScript");
         assertNull(p.getElementById("loaded"));
 
         ((HtmlElement)p.getElementById("button")).click();
@@ -110,15 +95,7 @@ public class RenderOnDemandTest {
         // if you want to test this in the browser
         /*
         System.out.println("Try http://localhost:"+localPort+"/self/testScript");
-        j.interactiveBreak();
+        interactiveBreak();
         */
-    }
-
-    @TestExtension
-    public static final class RootActionImpl extends InvisibleAction implements RootAction {
-        @Override
-        public String getUrlName() {
-            return "self";
-        }
     }
 }

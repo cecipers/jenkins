@@ -19,6 +19,7 @@ public final class RestrictiveEntityResolver implements EntityResolver {
 
     private RestrictiveEntityResolver() {
         // prevent multiple instantiation.
+        super();
     }
 
     /**

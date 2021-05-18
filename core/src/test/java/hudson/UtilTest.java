@@ -343,7 +343,7 @@ public class UtilTest {
 
 		private String error;
 
-		DigesterThread(String string, String expectedDigest) {
+		public DigesterThread(String string, String expectedDigest) {
     		this.string = string;
     		this.expectedDigest = expectedDigest;
     	}

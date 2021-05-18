@@ -495,3 +495,4 @@ public class DownloadService {
      */
     public static boolean signatureCheck = !SystemProperties.getBoolean(DownloadService.class.getName()+".noSignatureCheck");
 }
+

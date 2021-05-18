@@ -268,7 +268,7 @@ public class Connection {
 
             return spk;
         } catch (ClassNotFoundException e) {
-            throw new AssertionError(e); // impossible
+            throw new Error(e); // impossible
         }
     }
 

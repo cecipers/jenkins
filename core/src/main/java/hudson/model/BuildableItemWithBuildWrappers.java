@@ -29,3 +29,4 @@ public interface BuildableItemWithBuildWrappers extends BuildableItem {
      */
     DescribableList<BuildWrapper,Descriptor<BuildWrapper>> getBuildWrappersList();
 }
+

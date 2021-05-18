@@ -98,7 +98,7 @@ public class FunctionsTest {
 
     @Test
     @PrepareForTest(Stapler.class)
-    public void testGetActionUrl_absolutePath() {
+    public void testGetActionUrl_absolutePath() throws Exception{
         String contextPath = "/jenkins";
         StaplerRequest req = createMockRequest(contextPath);
         String[] paths = {
@@ -115,7 +115,7 @@ public class FunctionsTest {
 
     @Test
     @PrepareForTest(Stapler.class)
-    public void testGetActionUrl_relativePath() {
+    public void testGetActionUrl_relativePath() throws Exception{
         String contextPath = "/jenkins";
         String itUrl = "iturl/";
         StaplerRequest req = createMockRequest(contextPath);
@@ -134,7 +134,7 @@ public class FunctionsTest {
     
     @Test
     @PrepareForTest({Stapler.class, Jenkins.class})
-    public void testGetRelativeLinkTo_JobContainedInView() {
+    public void testGetRelativeLinkTo_JobContainedInView() throws Exception{
         Jenkins j = createMockJenkins();
         ItemGroup parent = j;
         String contextPath = "/jenkins";
@@ -153,7 +153,7 @@ public class FunctionsTest {
 
     @Test
     @PrepareForTest({Stapler.class, Jenkins.class})
-    public void testGetRelativeLinkTo_JobFromComputer() {
+    public void testGetRelativeLinkTo_JobFromComputer() throws Exception{
         Jenkins j = createMockJenkins();
         ItemGroup parent = j;
         String contextPath = "/jenkins";
@@ -170,7 +170,7 @@ public class FunctionsTest {
     @Ignore("too expensive to make it correct")
     @Test
     @PrepareForTest({Stapler.class, Jenkins.class})
-    public void testGetRelativeLinkTo_JobNotContainedInView() {
+    public void testGetRelativeLinkTo_JobNotContainedInView() throws Exception{
         Jenkins j = createMockJenkins();
         ItemGroup parent = j;
         String contextPath = "/jenkins";
@@ -190,7 +190,7 @@ public class FunctionsTest {
     
     @Test
     @PrepareForTest({Stapler.class,Jenkins.class})
-    public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() {
+    public void testGetRelativeLinkTo_JobContainedInViewWithinItemGroup() throws Exception{
         Jenkins j = createMockJenkins();
         TopLevelItemAndItemGroup parent = mock(TopLevelItemAndItemGroup.class);
         when(parent.getShortUrl()).thenReturn("parent/");
@@ -210,7 +210,7 @@ public class FunctionsTest {
 
     @Issue("JENKINS-17713")
     @PrepareForTest({Stapler.class, Jenkins.class})
-    @Test public void getRelativeLinkTo_MavenModules() {
+    @Test public void getRelativeLinkTo_MavenModules() throws Exception {
         Jenkins j = createMockJenkins();
         StaplerRequest req = createMockRequest("/jenkins");
         mockStatic(Stapler.class);
@@ -286,7 +286,7 @@ public class FunctionsTest {
 
     @Test
     @PrepareForTest(Stapler.class)
-    public void testGetActionUrl_unparseable() {
+    public void testGetActionUrl_unparseable() throws Exception{
         assertNull(Functions.getActionUrl(null, createMockAction("http://example.net/stuff?something=^woohoo")));
     }
 
@@ -345,13 +345,13 @@ public class FunctionsTest {
 
     private void assertBrokenAs(String plain, String... chunks) {
         assertEquals(
-                String.join("<wbr>", chunks),
+                Util.join(Arrays.asList(chunks), "<wbr>"),
                 Functions.breakableString(plain)
         );
     }
 
     @Issue("JENKINS-20800")
-    @Test public void printLogRecordHtml() {
+    @Test public void printLogRecordHtml() throws Exception {
         LogRecord lr = new LogRecord(Level.INFO, "Bad input <xml/>");
         lr.setLoggerName("test");
         assertEquals("Bad input &lt;xml/&gt;\n", Functions.printLogRecordHtml(lr, null)[3]);

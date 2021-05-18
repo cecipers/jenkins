@@ -154,15 +154,15 @@ public class ParameterDefinitionTest {
     }
 
     static class ExtendStringParameterDefinition extends StringParameterDefinition {
-        ExtendStringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
+        public ExtendStringParameterDefinition(String name, String defaultValue, String description, boolean trim) {
             super(name, defaultValue, description, trim);
         }
 
-        ExtendStringParameterDefinition(String name, String defaultValue, String description) {
+        public ExtendStringParameterDefinition(String name, String defaultValue, String description) {
             super(name, defaultValue, description);
         }
 
-        ExtendStringParameterDefinition(String name, String defaultValue) {
+        public ExtendStringParameterDefinition(String name, String defaultValue) {
             super(name, defaultValue);
         }
     }

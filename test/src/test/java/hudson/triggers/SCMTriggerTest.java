@@ -114,12 +114,12 @@ public class SCMTriggerTest {
         private volatile int myRev = 1;
         private final OneShotEvent checkoutStarted;
 
-        TestSCM(OneShotEvent checkoutStarted) {
+        public TestSCM(OneShotEvent checkoutStarted) {
             this.checkoutStarted = checkoutStarted;
         }
 
-        @Override
-        public synchronized boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
+        @Override synchronized
+        public boolean pollChanges(AbstractProject project, Launcher launcher, FilePath dir, TaskListener listener) throws IOException {
             return myRev < 2;
         }
 

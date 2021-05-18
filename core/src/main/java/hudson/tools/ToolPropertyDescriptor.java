@@ -43,3 +43,4 @@ public abstract class ToolPropertyDescriptor extends PropertyDescriptor<ToolProp
     protected ToolPropertyDescriptor() {
     }
 }
+

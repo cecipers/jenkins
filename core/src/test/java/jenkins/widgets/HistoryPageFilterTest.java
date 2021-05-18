@@ -340,7 +340,7 @@ public class HistoryPageFilterTest {
 
     @Test
     @Issue("JENKINS-40718")
-    public void should_search_builds_by_build_variables() {
+    public void should_search_builds_by_build_variables() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(
                 new MockBuild(2).withBuildVariables(Collections.singletonMap("env", "dummyEnv")),
                 new MockBuild(1).withBuildVariables(Collections.singletonMap("env", "otherEnv")));
@@ -412,12 +412,12 @@ public class HistoryPageFilterTest {
     private static class MockRun extends Run {
         private final long queueId;
 
-        MockRun(long queueId) throws IOException {
+        public MockRun(long queueId) throws IOException {
             super(Mockito.mock(Job.class));
             this.queueId = queueId;
         }
 
-        MockRun(long queueId, Result result) throws IOException {
+        public MockRun(long queueId, Result result) throws IOException {
             this(queueId);
             this.result = result;
         }
@@ -450,7 +450,7 @@ public class HistoryPageFilterTest {
 
     // A version of MockRun that will throw an exception if getQueueId or getNumber is called
     private static class ExplodingMockRun extends MockRun {
-        ExplodingMockRun(long queueId) throws IOException {
+        public ExplodingMockRun(long queueId) throws IOException {
             super(queueId);
         }
 
@@ -507,7 +507,7 @@ public class HistoryPageFilterTest {
             return parameterValues;
         }
 
-        MockBuild withSensitiveBuildParameters(String paramName, String paramValue) {
+        MockBuild withSensitiveBuildParameters(String paramName, String paramValue) throws IOException {
             addAction(new ParametersAction(Collections.singletonList(createSensitiveStringParameterValue(paramName, paramValue)),
                     Collections.singletonList(paramName)));
             return this;

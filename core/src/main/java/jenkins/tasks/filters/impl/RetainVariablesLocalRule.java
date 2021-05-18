@@ -187,6 +187,7 @@ public class RetainVariablesLocalRule implements EnvVarsFilterLocalRule {
     public static final class DescriptorImpl extends EnvVarsFilterLocalRuleDescriptor {
 
         public DescriptorImpl() {
+            super();
             load();
         }
 

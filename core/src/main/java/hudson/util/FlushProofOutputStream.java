@@ -17,3 +17,4 @@ public class FlushProofOutputStream extends DelegatingOutputStream {
     public void flush() throws IOException {
     }
 }
+

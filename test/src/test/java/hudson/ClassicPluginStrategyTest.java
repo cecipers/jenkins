@@ -24,19 +24,13 @@
  */
 package hudson;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import hudson.model.Hudson;
-import org.junit.Rule;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRecipe;
-import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.jvnet.hudson.test.recipes.Recipe;
 
 import java.io.File;
 import java.net.URL;
@@ -49,15 +43,19 @@ import java.util.Set;
  * @author Alan Harder
  */
 @Category(SmokeTest.class)
-public class ClassicPluginStrategyTest {
+public class ClassicPluginStrategyTest extends HudsonTestCase {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule() {
+    @Override
+    protected void setUp() throws Exception {
+        useLocalPluginManager = true;
+        super.setUp();
+    }
+
     @Override
     protected Hudson newHudson() throws Exception {
         File home = homeLoader.allocate();
         
-        for (JenkinsRecipe.Runner r : recipes) {
+        for (Recipe.Runner r : recipes) {
             r.decorateHome(this,home);
         }
         LocalPluginManager pluginManager = new LocalPluginManager(home) {
@@ -70,20 +68,17 @@ public class ClassicPluginStrategyTest {
                 return names;
             }
         };
-        setPluginManager(pluginManager);
         return new Hudson(home, createWebServer(), pluginManager);
      }
-    };
 
     /**
      * Test finding resources via DependencyClassLoader.
      */
     @LocalData
-    @Test
     public void testDependencyClassLoader() throws Exception {
         // Test data has: foo3 depends on foo2,foo1; foo2 depends on foo1
         // (thus findResources from foo3 can find foo1 resources via 2 dependency paths)
-        PluginWrapper p = j.jenkins.getPluginManager().getPlugin("foo3");
+        PluginWrapper p = jenkins.getPluginManager().getPlugin("foo3");
         String res;
 
         // In the current impl, the dependencies are the parent ClassLoader so resources
@@ -109,9 +104,8 @@ public class ClassicPluginStrategyTest {
      */
     @LocalData
     @Issue("JENKINS-18654")
-    @Test
     public void testDisabledDependencyClassLoader() throws Exception {
-        PluginWrapper p = j.jenkins.getPluginManager().getPlugin("foo4");
+        PluginWrapper p = jenkins.getPluginManager().getPlugin("foo4");
 
         Enumeration<URL> en = p.classLoader.getResources("test-resource");
         for (int i = 0; en.hasMoreElements(); i++) {
@@ -129,9 +123,8 @@ public class ClassicPluginStrategyTest {
      */
     @LocalData
     @Issue("JENKINS-27289")
-    @Test
     public void testMaskResourceClassLoader() throws Exception {
-        PluginWrapper pw = j.jenkins.getPluginManager().getPlugin("foo1");
+        PluginWrapper pw = jenkins.getPluginManager().getPlugin("foo1");
         Class<?> clazz = pw.classLoader.loadClass("org.apache.http.impl.io.SocketInputBuffer");
         ClassLoader cl = clazz.getClassLoader();
         URL url = cl.getResource("org/apache/http/impl/io/SocketInputBuffer.class");
